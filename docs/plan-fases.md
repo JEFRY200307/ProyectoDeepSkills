@@ -9,7 +9,7 @@ Ciclo en cada fase: **planear → ejecutar → verificar**. Un commit al cerrar 
 
 ## Fase 1: Lectura y entorno
 
-- Leer el PDF de TS2TabPFN y contrastarlo con `docs/papers.md`.
+- ~~Leer el PDF de TS2TabPFN y contrastarlo con `docs/papers.md`.~~ Hecho el 3 nov 2026.
 - Recorrer `references/TS2TabPFN/code/` y documentar el flujo (carga → extracción → TabPFN → métricas).
 - Crear el entorno (Python 3.11, aeon, tsfresh, tabpfn, neurokit2, wfdb) y acceder a los pesos de TabPFN 2.5.
 - **Verificación:** `import tabpfn` y una predicción sobre un dataset de juguete.
