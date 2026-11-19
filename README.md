@@ -46,6 +46,7 @@ ProyectoDeepSkills/
 - [Referencias de código](docs/referencias.md): repos clonados y commits
 - [Plan por fases](docs/plan-fases.md)
 - [Plan de cómputo](docs/computo.md): Colab Pro, AWS, Kaggle y mediciones
+- [Guía de ejecución](docs/ejecucion.md): código, entorno local, Colab y AWS
 - [Registro de supuestos](docs/supuestos.md)
 
 ## Papers

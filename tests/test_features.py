@@ -1,0 +1,80 @@
+import numpy as np
+import pytest
+from tsfresh.feature_extraction import MinimalFCParameters
+
+from ts2tabpfn.data import get_resample
+from ts2tabpfn.features import (
+    cache_path,
+    extract_catch22,
+    extract_full,
+    extract_multirocket,
+    extract_tsfresh,
+    load_feature_cache,
+    save_feature_cache,
+    to_tsfresh_df,
+)
+
+
+def test_catch22_gives_22_features_per_channel(toy_split):
+    X_train = toy_split[0]
+    features = extract_catch22(X_train)
+    assert features.shape == (len(X_train), 22 * X_train.shape[1])
+
+
+def test_to_tsfresh_df_long_format(toy_split):
+    X = toy_split[0][:3]
+    df = to_tsfresh_df(X)
+    assert len(df) == 3 * 2 * 60
+    assert set(df["kind"]) == {"ch0", "ch1"}
+
+
+def test_tsfresh_has_no_nans_after_impute(toy_split):
+    features = extract_tsfresh(toy_split[0], n_jobs=1, fc_parameters=MinimalFCParameters())
+    assert features.shape[0] == len(toy_split[0])
+    assert np.isfinite(features).all()
+
+
+def test_multirocket_is_deterministic_with_seed(toy_split):
+    X_train, _, X_test, _ = toy_split
+    a_train, a_test = extract_multirocket(X_train, X_test, random_state=3, n_jobs=1)
+    b_train, b_test = extract_multirocket(X_train, X_test, random_state=3, n_jobs=1)
+    assert a_train.shape[0] == len(X_train) and a_test.shape[0] == len(X_test)
+    assert a_train.shape[1] == a_test.shape[1]
+    np.testing.assert_array_equal(a_train, b_train)
+    np.testing.assert_array_equal(a_test, b_test)
+
+
+@pytest.mark.parametrize("extractor", ["c22", "tsfresh"])
+def test_cached_features_equal_per_resample_extraction(toy_split, extractor, monkeypatch):
+    """Decision #12: extracting once and resampling rows == extracting after resampling."""
+    if extractor == "tsfresh":
+        import ts2tabpfn.features as features_module
+
+        original = features_module.extract_tsfresh
+        monkeypatch.setattr(
+            features_module, "extract_tsfresh",
+            lambda X, n_jobs=1: original(X, n_jobs=1, fc_parameters=MinimalFCParameters()),
+        )
+    X_train, y_train, X_test, y_test = toy_split
+    full = extract_full(X_train, X_test, extractor, n_jobs=1)
+    F_train, F_test = full[: len(X_train)], full[len(X_train):]
+
+    for resample_id in (0, 4):
+        cached = get_resample(F_train, y_train, F_test, y_test, resample_id)
+        Xr_train, yr_train, Xr_test, yr_test = get_resample(X_train, y_train, X_test, y_test, resample_id)
+        direct = extract_full(Xr_train, Xr_test, extractor, n_jobs=1)
+        np.testing.assert_allclose(cached[0], direct[: len(Xr_train)], rtol=1e-9, atol=1e-12)
+        np.testing.assert_allclose(cached[2], direct[len(Xr_train):], rtol=1e-9, atol=1e-12)
+        np.testing.assert_array_equal(cached[1], yr_train)
+        np.testing.assert_array_equal(cached[3], yr_test)
+
+
+def test_feature_cache_roundtrip(tmp_path, toy_split):
+    X_train, y_train, X_test, y_test = toy_split
+    full = np.arange(len(y_train) + len(y_test) * 3, dtype=float).reshape(-1, 1)[: len(y_train) + len(y_test)]
+    path = cache_path(tmp_path, "c22", "Toy")
+    save_feature_cache(path, full, np.concatenate([y_train, y_test]), len(y_train))
+    F_train, f_y_train, F_test, f_y_test = load_feature_cache(path)
+    np.testing.assert_array_equal(F_train, full[: len(y_train)])
+    np.testing.assert_array_equal(f_y_test, y_test)
+    assert not list(path.parent.glob("*.tmp*"))

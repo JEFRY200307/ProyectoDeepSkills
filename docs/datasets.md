@@ -7,6 +7,8 @@ Los autores empaquetaron los datos en Google Drive (ver `references/TS2TabPFN/RE
 - TSC (UCR/UEA): `gdown 1p8D-haDDwPKloKMBQCQHgENYHVsjixR4`
 - TSER (TSML Extended): `gdown 1Bg_KHSv77eMbqDyElPohJ1dIam1CkS_V`
 
+Descargado el 18 nov 2026: `tsc_data.zip`, 1.29 GB (4.1 GB descomprimido, 158 carpetas con `<dataset>_TRAIN.ts` y `<dataset>_TEST.ts`), SHA-256 `b927bcbc3be117a1dd2c643bf3c6eabbbf2c4b43ceca3641fb27209b1f61bab7`. Los 134 datasets del paper cargan sin errores, con longitud igual y sin NaN (`results/data_check.csv`, decisión #14).
+
 Alternativa sin el zip completo: descargar datasets individuales con `aeon.datasets.load_classification("ECG200")`.
 
 Fuentes originales: <https://www.timeseriesclassification.com> y <https://zenodo.org/records/11236865>.
@@ -15,9 +17,10 @@ Fuentes originales: <https://www.timeseriesclassification.com> y <https://zenodo
 
 Fuente: tablas finales `references/TS2TabPFN/tsc/results/Tab_{c22,multi,tsfresh}.csv` (una fila por dataset, 30 columnas = resamples 0-29).
 
-- **TSC: 134 = 111 univariados (UCR) + 23 multivariados (UEA).** Es el conjunto común a los tres extractores (= `Tab_tsfresh.csv`). `Tab_c22.csv` trae 5 extra (Crop, DuckDuckGeese, FaceDetection, PenDigits, PEMS-SF) y `Tab_multi.csv` 1 extra (PEMS-SF); todos salvo PEMS-SF están en `invalid_datasets` de `config.yaml`.
-- Multivariados: ArticularyWordRecognition, AtrialFibrillation, BasicMotions, Cricket, ERing, EigenWorms, Epilepsy, EthanolConcentration, FingerMovements, HandMovementDirection, Handwriting, Heartbeat, LSST, Libras, MotorImagery, NATOPS, PEMS-SF, PhonemeSpectra, RacketSports, SelfRegulationSCP1, SelfRegulationSCP2, StandWalkJump, UWaveGestureLibrary.
-- Univariados: los 111 restantes de `Tab_tsfresh.csv` (incluye ECG200, ECG5000, ECGFiveDays, TwoLeadECG, CinCECGTorso, NonInvasiveFetalECGThorax1/2).
+- **TSC: 134 = 112 univariados (UCR) + 22 multivariados (UEA).** Es el conjunto común a los tres extractores (= `Tab_tsfresh.csv`). `Tab_c22.csv` trae 5 extra (Crop, DuckDuckGeese, FaceDetection, PenDigits, PEMS-SF) y `Tab_multi.csv` 1 extra (PEMS-SF); todos salvo PEMS-SF están en `invalid_datasets` de `config.yaml`. PEMS-SF no está en `Tab_tsfresh.csv`, así que queda fuera. *(Corregido el 18 nov 2026: antes decía 111 + 23 por contar PEMS-SF.)*
+- Multivariados: ArticularyWordRecognition, AtrialFibrillation, BasicMotions, Cricket, ERing, EigenWorms, Epilepsy, EthanolConcentration, FingerMovements, HandMovementDirection, Handwriting, Heartbeat, LSST, Libras, MotorImagery, NATOPS, PhonemeSpectra, RacketSports, SelfRegulationSCP1, SelfRegulationSCP2, StandWalkJump, UWaveGestureLibrary.
+- Univariados: los 112 restantes de `Tab_tsfresh.csv` (incluye ECG200, ECG5000, ECGFiveDays, TwoLeadECG, CinCECGTorso, NonInvasiveFetalECGThorax1/2 y Fungi).
+- Lista completa con los tiempos de los autores: `configs/datasets_tsc.csv` (generada por `scripts/build_dataset_config.py`).
 - **TSER: 55** (`tser/results/Tab_tsfresh.csv`; `Tab_c22` trae 58 y `Tab_multi` 56).
 
 ### Costo de cómputo reportado por los autores (RTX 3060)

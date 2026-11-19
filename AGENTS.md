@@ -25,7 +25,7 @@ Antes de cualquier tarea, lee `docs/contexto.md`, `docs/papers.md` y `docs/plan-
 
 ## Entorno
 
-- Python 3.11, entorno en `env.yaml` o `requirements.txt` (por definir en Fase 1).
+- Python 3.10 con las versiones exactas del `env.yaml` de referencia, instaladas con `uv` (`requirements.txt`). Decisión #9 en `docs/supuestos.md`.
 - Librerías clave: `aeon`, `tsfresh`, `tabpfn` (2.5, pesos vía Hugging Face), `neurokit2`, `wfdb`, `pywavelets`.
 - Hardware de referencia del paper: RTX 3060 12 GB. El equipo local no tiene GPU: el código y las pruebas se escriben en local; TabPFN corre en Google Colab Pro (máximo 2 sesiones GPU a la vez), la extracción de tsfresh en AWS (CPU), y los datos y resultados van a Google Drive. Ver `docs/computo.md`.
 - Colab usa Python 3.13; el código debe ser reanudable (un resultado por dataset × extractor × resample) porque las sesiones se cortan.

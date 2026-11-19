@@ -13,12 +13,12 @@ Ciclo en cada fase: **planear → ejecutar → verificar**. Un commit al cerrar 
 
 - ~~Leer el PDF de TS2TabPFN y contrastarlo con `docs/papers.md`.~~ Hecho el 3 nov 2026.
 - ~~Identificar los datasets exactos y el costo de cómputo del paper.~~ Hecho el 18 nov 2026 (`docs/datasets.md`).
-- Recorrer `references/TS2TabPFN/code/` y documentar el flujo (carga → extracción → TabPFN → métricas).
-- `requirements.txt` con las versiones clave del `env.yaml` de referencia (`tabpfn==6.3.2`, `aeon==1.3.0`, `tsfresh==0.21.1`, `torch==2.10.0`), más `neurokit2` y `wfdb`.
-- Notebook de Colab: instalación, montaje de Drive, token de Hugging Face vía *Secrets* y descarga de los datos UCR/UEA del paper.
-- Script de extracción de tsfresh para AWS, con checkpoint por dataset y apagado automático al terminar.
-- Ejecución reanudable (ver `computo.md`), con su prueba.
-- **Verificación:** `import tabpfn` y una predicción en Colab con GPU; calibración con 2–3 datasets en T4, L4 y A100 (tiempo y CU reales).
+- ~~Recorrer `references/TS2TabPFN/code/` y documentar el flujo.~~ Hecho: `docs/ejecucion.md` y decisiones #9–#15.
+- ~~`requirements.txt` con las versiones exactas del `env.yaml` (Python 3.10, `uv`).~~ Hecho. `neurokit2` y `wfdb` se agregan en la Fase 3.
+- ~~Código en `src/ts2tabpfn/` (datos, features, modelo, ejecución reanudable) con pruebas.~~ Hecho: 25 pruebas pasan; la de TabPFN real espera el `HF_TOKEN`.
+- ~~Notebook de Colab y script de tsfresh para AWS.~~ Hecho: `notebooks/colab_runner.ipynb`, `scripts/extract_tsfresh.py`.
+- ~~Descargar y verificar los datos de los autores.~~ Hecho: 134/134, sin NaN (decisión #14).
+- **Pendiente — verificación en Colab:** `HF_TOKEN` + términos de TabPFN 2.5, una predicción con GPU y calibración con 2–3 datasets en T4, L4 y A100 (tiempo y CU reales).
 
 ## Fase 2: Reproducir el experimento de clasificación completo (pedido de Diego)
 
