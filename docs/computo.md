@@ -53,6 +53,21 @@ Suma de la columna `time` (fit + predict de TabPFN, 30 runs) en `references/TS2T
 - Tiempo: con 2 sesiones L4, **~2.5–3 días** de corridas tras la Fase 1 (~2–2.5 días si se suma Kaggle).
 - Regla de corte: si a las ~12 h la proyección supera 600 CU o 48 h, se prioriza catch22 y tsfresh completos + MultiROCKET en los 7 de ECG, y el resto de MultiROCKET sigue con la recarga mensual.
 
+## Calibración en Colab L4 (19 nov 2026)
+
+Segundos por resample (extracción + fit + predict). Tasa medida: 1.94 CU/h por sesión L4.
+
+| Dataset (clases, N) | Extractor | Autores (RTX 3060) | L4 antes de #18 | L4 con #18 | Accuracy nuestra vs. autores |
+|---|---|---|---|---|---|
+| ECG200 (2, 200) | catch22 | 0.4 | ~0.8 | — | r0–r2: 0.82 / 0.82 / 0.79 vs. 0.82 / 0.82 / 0.80 |
+| ECG5000 (5, 5000) | catch22 | 2.3 | ~1.8 | — | r0–r2: 0.9382 / 0.9336 / 0.9404 vs. 0.9382 / 0.9338 / 0.9404 |
+| ECG200 | MultiROCKET | 55 | ~95 | **~6.5** | r0–r3: 0.90 / 0.90 / 0.91 / 0.94 (media autores 0.907) |
+| ECG5000 | MultiROCKET | 107 | ~150 | **~74** | r0–r3: 0.946 / 0.942 / 0.950 / 0.947 (media autores 0.948) |
+
+- catch22 reproduce a los autores casi exacto (4 de 6 idénticos; los otros 2 difieren en una serie). MultiROCKET difiere un poco por la semilla de los kernels (decisión #11); se compara la media de 30.
+- Antes de la decisión #18, MultiROCKET era más lento en la L4 que en la máquina de los autores: el cuello de botella era el preprocesamiento de TabPFN en CPU, no la GPU.
+- Proyección de MultiROCKET completo: entre ~25 h (escala solo con N) y ~150 h de L4 (0.7× el tiempo de los autores). La incertidumbre son los datasets con más de 10 clases (`ManyClassClassifier` corre varios TabPFN). Entre ~50 y ~290 CU.
+
 ## Requisitos para el código (Fase 1)
 
 - **Ejecución reanudable:** la unidad de trabajo es (dataset, extractor, resample); cada resultado se guarda en Drive al terminar y el script salta lo ya hecho. Prueba que simula un corte.
