@@ -41,23 +41,4 @@ Orden previsto: catch22 → los 3 extractores en los 7 de ECG → tsfresh → Mu
 
 ## AWS (extracción de tsfresh)
 
-1. Lanza una `c6i.8xlarge` on-demand en Ohio con Ubuntu 22.04 y disco de 50 GB, con SSH solo desde tu IP.
-2. Instala el entorno y baja los datos:
-   ```bash
-   sudo apt-get update && sudo apt-get install -y unzip git python3-pip
-   pip install uv==0.9.5 && export PATH=$HOME/.local/bin:$PATH
-   git clone -b phase-1 https://github.com/JEFRY200307/ProyectoDeepSkills.git && cd ProyectoDeepSkills
-   uv venv --python 3.10 .venv && uv pip install --python .venv/bin/python -r requirements.txt
-   .venv/bin/python -m gdown 1p8D-haDDwPKloKMBQCQHgENYHVsjixR4 -O tsc_data.zip && unzip -q tsc_data.zip -d data/raw/tsc
-   ```
-3. Calibra con 3 datasets livianos y mide el tiempo:
-   ```bash
-   .venv/bin/python scripts/extract_tsfresh.py --data-dir <carpeta con ECG200/> --features-dir features --n-jobs 32 --datasets ECG200 Coffee GunPoint
-   ```
-4. Lanza el resto en segundo plano, con apagado automático al terminar:
-   ```bash
-   nohup .venv/bin/python scripts/extract_tsfresh.py --data-dir <carpeta> --features-dir features --n-jobs 32 --shutdown > tsfresh.log 2>&1 &
-   ```
-5. Copia `features/tsfresh/*.npz` a `MyDrive/ts2tabpfn/features/tsfresh/` (por ejemplo con `rclone` o descargándolos) y **termina la instancia** (*Terminate*).
-
-Alerta de presupuesto en AWS Budgets antes de lanzar (decisión #8).
+Guía completa paso a paso en [aws_tsfresh.md](aws_tsfresh.md): instancia `c7a.8xlarge` que se configura sola con [`scripts/aws/tsfresh_user_data.sh`](../scripts/aws/tsfresh_user_data.sh), sube las features a S3 y se borra al terminar.
