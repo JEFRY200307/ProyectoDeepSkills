@@ -12,8 +12,8 @@ Este proyecto sirve a dos fines:
 | Fase | Descripción | Estado |
 |---|---|---|
 | 0 | Base del proyecto: estructura, papers, contexto, datasets documentados | ✅ Hecha |
-| 1 | Lectura del paper y del código de referencia, entorno en Colab | En curso |
-| 2 | Reproducir el experimento de clasificación completo: 3 extractores × 134 datasets × 30 resamples | Pendiente |
+| 1 | Lectura del paper y del código de referencia, entorno, pipeline reanudable y calibración en Colab | ✅ Hecha |
+| 2 | Reproducir el experimento de clasificación completo: 3 extractores × 134 datasets × 30 resamples | En curso |
 | 3 | Pipeline de ECG: PTB-XL + extractores específicos | Pendiente |
 | 4 | Comparación genérico vs. específico + reporte | Pendiente |
 

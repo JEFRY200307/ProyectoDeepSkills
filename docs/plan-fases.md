@@ -18,7 +18,7 @@ Ciclo en cada fase: **planear → ejecutar → verificar**. Un commit al cerrar 
 - ~~Código en `src/ts2tabpfn/` (datos, features, modelo, ejecución reanudable) con pruebas.~~ Hecho: 25 pruebas pasan; la de TabPFN real espera el `HF_TOKEN`.
 - ~~Notebook de Colab y script de tsfresh para AWS.~~ Hecho: `notebooks/colab_runner.ipynb`, `scripts/extract_tsfresh.py`.
 - ~~Descargar y verificar los datos de los autores.~~ Hecho: 134/134, sin NaN (decisión #14).
-- **Pendiente — verificación en Colab:** `HF_TOKEN` + términos de TabPFN 2.5, una predicción con GPU y calibración con 2–3 datasets en T4, L4 y A100 (tiempo y CU reales).
+- ~~Verificación en Colab: TabPFN con GPU y calibración.~~ Hecho el 19 nov 2026 en L4 (`computo.md`). Se corrigieron un segfault de numba/stumpy (decisión #17) y la lentitud del preprocesamiento de TabPFN (decisión #18). T4 y A100 no se calibraron: la L4 resultó suficiente.
 
 ## Fase 2: Reproducir el experimento de clasificación completo (pedido de Diego)
 
