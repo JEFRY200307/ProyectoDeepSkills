@@ -1,0 +1,2 @@
+extractor,n_datasets,mean_ours,mean_authors,mean_diff,max_abs_diff,wins,ties,losses,wilcoxon_p,commit
+c22,134,0.799207,0.79934,-0.000134,0.016846,32,60,42,0.221363,c163d09
