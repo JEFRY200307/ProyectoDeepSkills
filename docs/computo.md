@@ -66,7 +66,8 @@ Segundos por resample (extracción + fit + predict). Tasa medida: 1.94 CU/h por 
 
 - catch22 reproduce a los autores casi exacto (4 de 6 idénticos; los otros 2 difieren en una serie). MultiROCKET difiere un poco por la semilla de los kernels (decisión #11); se compara la media de 30.
 - Antes de la decisión #18, MultiROCKET era más lento en la L4 que en la máquina de los autores: el cuello de botella era el preprocesamiento de TabPFN en CPU, no la GPU.
-- Proyección de MultiROCKET completo: entre ~25 h (escala solo con N) y ~150 h de L4 (0.7× el tiempo de los autores). La incertidumbre son los datasets con más de 10 clases (`ManyClassClassifier` corre varios TabPFN). Entre ~50 y ~290 CU.
+- Datasets con más de 10 clases (`ManyClassClassifier`): Adiac (37 clases, N = 781) tardó 318 s y 272 s por resample contra 609 s de los autores (0.48×). Accuracy r0–r1: 0.8286 / 0.8286 (autores 0.8363 / 0.8517, media de 30: 0.835).
+- Proyección de MultiROCKET completo con esa medición (0.48× en los 26 datasets de más de 10 clases; 0.3–0.7× en el resto): **~90–120 h de L4, ~170–230 CU, ~2–2.5 días con 2 sesiones**.
 
 ## Requisitos para el código (Fase 1)
 
