@@ -21,6 +21,9 @@ def make_classifier(random_state: int, device: str):
     from tabpfn import TabPFNClassifier
     from tabpfn_extensions.many_class import ManyClassClassifier
 
+    from .fast_dtypes import install
+
+    install()  # same output, much faster with ~50k MultiROCKET columns (decision #18)
     estimator = TabPFNClassifier(
         random_state=random_state,
         ignore_pretraining_limits=True,
