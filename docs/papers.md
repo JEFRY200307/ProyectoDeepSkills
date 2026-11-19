@@ -53,7 +53,10 @@ i7-10700F, 32 GB RAM, RTX 3060 12 GB. Software: aeon, TabPFN oficial, CodeCarbon
 
 ### Observaciones para la reproducción
 
-- El `config.yaml` del repo trae `runs: 1`, pero el paper promedia **30 resamples**. Una reproducción rápida con 1 run no es directamente comparable con la tabla del paper; hay que decidirlo y anotarlo en `supuestos.md`.
+- El paper tiene **dos experimentos**: clasificación (TSC, 134 datasets, accuracy, `TabPFNClassifier`) y regresión extrínseca (TSER, 55 datasets, RMSE, `TabPFNRegressor`). Cada uno se corre con los 3 extractores, así que son 6 configuraciones.
+- TabPFN no se entrena: `fit()` solo guarda el train como contexto y la predicción es un forward pass. Reproducir significa volver a correr el pipeline y obtener los mismos números.
+- El `config.yaml` del repo trae `runs: 1`, pero el paper promedia **30 resamples**. Se replican los 30 (decisión #5 en `supuestos.md`).
+- Alcance elegido: experimento de clasificación completo, 3 extractores × 134 datasets × 30 resamples (decisión #7). Cómputo en `docs/computo.md`.
 - Como los baselines vienen de la literatura, para comparar basta con reproducir TS2TabPFN y contrastar con los resultados publicados en `references/TS2TabPFN/tsc/results/`.
 
 ### Datasets de ECG dentro de UCR (útiles para el Paso 1)

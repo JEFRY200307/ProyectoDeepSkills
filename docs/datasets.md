@@ -11,6 +11,26 @@ Alternativa sin el zip completo: descargar datasets individuales con `aeon.datas
 
 Fuentes originales: <https://www.timeseriesclassification.com> y <https://zenodo.org/records/11236865>.
 
+### Datasets exactos del paper (verificado el 18 nov 2026)
+
+Fuente: tablas finales `references/TS2TabPFN/tsc/results/Tab_{c22,multi,tsfresh}.csv` (una fila por dataset, 30 columnas = resamples 0-29).
+
+- **TSC: 134 = 111 univariados (UCR) + 23 multivariados (UEA).** Es el conjunto común a los tres extractores (= `Tab_tsfresh.csv`). `Tab_c22.csv` trae 5 extra (Crop, DuckDuckGeese, FaceDetection, PenDigits, PEMS-SF) y `Tab_multi.csv` 1 extra (PEMS-SF); todos salvo PEMS-SF están en `invalid_datasets` de `config.yaml`.
+- Multivariados: ArticularyWordRecognition, AtrialFibrillation, BasicMotions, Cricket, ERing, EigenWorms, Epilepsy, EthanolConcentration, FingerMovements, HandMovementDirection, Handwriting, Heartbeat, LSST, Libras, MotorImagery, NATOPS, PEMS-SF, PhonemeSpectra, RacketSports, SelfRegulationSCP1, SelfRegulationSCP2, StandWalkJump, UWaveGestureLibrary.
+- Univariados: los 111 restantes de `Tab_tsfresh.csv` (incluye ECG200, ECG5000, ECGFiveDays, TwoLeadECG, CinCECGTorso, NonInvasiveFetalECGThorax1/2).
+- **TSER: 55** (`tser/results/Tab_tsfresh.csv`; `Tab_c22` trae 58 y `Tab_multi` 56).
+
+### Costo de cómputo reportado por los autores (RTX 3060)
+
+Suma de la columna `time` (fit + predict de TabPFN, 30 runs) en `tsc/outputs/*.csv` y `tser/outputs/*.csv`, más tiempos de extracción en `time_*.csv`:
+
+| Tarea | catch22 | MultiROCKET | tsfresh |
+|---|---|---|---|
+| TSC (134) | ~10 h | ~199 h | ~44 h + ~43 h de extracción (16 núcleos) |
+| TSER (55) | ~6 h | ~57 h | ~9 h |
+
+Total aproximado: **~370 h de GPU**. No es viable completo en Colab gratuito.
+
 ## Paso 2: ECG (recomendados por Rafael, en orden de relevancia)
 
 | # | Dataset | Por qué | Enlace |

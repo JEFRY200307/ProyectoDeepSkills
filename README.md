@@ -12,8 +12,8 @@ Este proyecto sirve a dos fines:
 | Fase | Descripción | Estado |
 |---|---|---|
 | 0 | Base del proyecto: estructura, papers, contexto, datasets documentados | ✅ Hecha |
-| 1 | Lectura guiada del paper y del código de referencia | Pendiente |
-| 2 | Reproducir TS2TabPFN en un subconjunto de UCR (incluye datasets de ECG) | Pendiente |
+| 1 | Lectura del paper y del código de referencia, entorno en Colab | En curso |
+| 2 | Reproducir el experimento de clasificación completo: 3 extractores × 134 datasets × 30 resamples | Pendiente |
 | 3 | Pipeline de ECG: PTB-XL + extractores específicos | Pendiente |
 | 4 | Comparación genérico vs. específico + reporte | Pendiente |
 
@@ -45,6 +45,7 @@ ProyectoDeepSkills/
 - [Datasets de ECG](docs/datasets.md): lista recomendada por Rafael da Costa Silva
 - [Referencias de código](docs/referencias.md): repos clonados y commits
 - [Plan por fases](docs/plan-fases.md)
+- [Plan de cómputo](docs/computo.md): Colab Pro, AWS, Kaggle y mediciones
 - [Registro de supuestos](docs/supuestos.md)
 
 ## Papers
