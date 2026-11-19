@@ -45,16 +45,15 @@ def to_tsfresh_df(X) -> pd.DataFrame:
     return pd.concat(dfs, ignore_index=True)
 
 
-def extract_tsfresh(X, n_jobs: int = N_JOBS_DEFAULT, fc_parameters=None) -> np.ndarray:
-    """EfficientFCParameters + impute (utils_train.py:59-80).
+def extract_tsfresh_raw(X, n_jobs: int = N_JOBS_DEFAULT, fc_parameters=None) -> pd.DataFrame:
+    """EfficientFCParameters features, one row per series, before imputation.
 
     `fc_parameters` exists only so tests can use a cheaper profile.
     """
     from tsfresh import extract_features
     from tsfresh.feature_extraction import EfficientFCParameters
-    from tsfresh.utilities.dataframe_functions import impute
 
-    features = extract_features(
+    return extract_features(
         to_tsfresh_df(X),
         column_id="id",
         column_sort="time",
@@ -64,8 +63,81 @@ def extract_tsfresh(X, n_jobs: int = N_JOBS_DEFAULT, fc_parameters=None) -> np.n
         n_jobs=n_jobs,
         disable_progressbar=True,
     )
+
+
+def impute_features(features: pd.DataFrame) -> np.ndarray:
+    """tsfresh's `impute` over all rows (train+test, as the paper), then a plain array."""
+    from tsfresh.utilities.dataframe_functions import impute
+
     impute(features)
     return features.to_numpy()
+
+
+def extract_tsfresh(X, n_jobs: int = N_JOBS_DEFAULT, fc_parameters=None) -> np.ndarray:
+    """EfficientFCParameters + impute (utils_train.py:59-80)."""
+    return impute_features(extract_tsfresh_raw(X, n_jobs=n_jobs, fc_parameters=fc_parameters))
+
+
+# --- Chunked tsfresh extraction (decision #19) -------------------------------------
+# Every EfficientFCParameters feature is computed from one series alone, so extracting
+# blocks of rows separately and concatenating them gives the same table as one call.
+# Only `impute` uses all rows, so it runs once, after the blocks are joined. This lets
+# EigenWorms (~33 h for the authors) be extracted in pieces shorter than a Colab session.
+
+
+def chunk_bounds(n_rows: int, n_chunks: int) -> list[tuple[int, int]]:
+    """Contiguous [start, end) row ranges of near-equal size."""
+    edges = np.linspace(0, n_rows, n_chunks + 1).round().astype(int)
+    return [(int(a), int(b)) for a, b in zip(edges[:-1], edges[1:])]
+
+
+def chunk_path(parts_dir: str | Path, chunk: int, n_chunks: int) -> Path:
+    return Path(parts_dir) / f"part_{chunk:03d}_of_{n_chunks:03d}.npz"
+
+
+def save_chunk(path: str | Path, features: pd.DataFrame) -> None:
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.stem + ".tmp.npz")
+    np.savez(tmp, values=features.to_numpy(), columns=np.asarray(features.columns, dtype=str))
+    os.replace(tmp, path)
+
+
+def assemble_chunks(parts_dir: str | Path, n_chunks: int):
+    """Imputed full feature matrix once all chunks exist; None while some are missing."""
+    paths = [chunk_path(parts_dir, c, n_chunks) for c in range(n_chunks)]
+    if not all(p.exists() for p in paths):
+        return None
+    frames = []
+    for p in paths:
+        with np.load(p, allow_pickle=False) as data:
+            frames.append(pd.DataFrame(data["values"], columns=list(data["columns"])))
+    columns = frames[0].columns
+    for frame in frames[1:]:
+        if list(frame.columns) != list(columns):
+            raise ValueError(f"Chunk columns differ in {parts_dir}")
+    full = pd.concat(frames, ignore_index=True)
+    return impute_features(full)
+
+
+def extract_tsfresh_chunked(X_train, X_test, parts_dir, n_chunks: int, chunk_ids=None,
+                            n_jobs: int = N_JOBS_DEFAULT, fc_parameters=None, log=print):
+    """Extract the missing chunks among `chunk_ids` (default: all), then try to assemble.
+
+    Returns the full imputed matrix (train rows first) or None if chunks are still missing.
+    Chunks already on disk are skipped, so the call can be repeated after an interruption,
+    or split across machines with different `chunk_ids`.
+    """
+    X_full = np.concatenate([X_train, X_test], axis=0)
+    bounds = chunk_bounds(len(X_full), n_chunks)
+    for chunk in (range(n_chunks) if chunk_ids is None else chunk_ids):
+        path = chunk_path(parts_dir, chunk, n_chunks)
+        if path.exists():
+            continue
+        start, end = bounds[chunk]
+        log(f"  chunk {chunk + 1}/{n_chunks}: rows {start}-{end}")
+        save_chunk(path, extract_tsfresh_raw(X_full[start:end], n_jobs=n_jobs, fc_parameters=fc_parameters))
+    return assemble_chunks(parts_dir, n_chunks)
 
 
 def extract_multirocket(X_train, X_test, random_state: int, n_jobs: int = N_JOBS_DEFAULT):

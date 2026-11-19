@@ -5,6 +5,8 @@ from tsfresh.feature_extraction import MinimalFCParameters
 from ts2tabpfn.data import get_resample
 from ts2tabpfn.features import (
     cache_path,
+    chunk_bounds,
+    extract_tsfresh_chunked,
     extract_catch22,
     extract_full,
     extract_multirocket,
@@ -67,6 +69,31 @@ def test_cached_features_equal_per_resample_extraction(toy_split, extractor, mon
         np.testing.assert_allclose(cached[2], direct[len(Xr_train):], rtol=1e-9, atol=1e-12)
         np.testing.assert_array_equal(cached[1], yr_train)
         np.testing.assert_array_equal(cached[3], yr_test)
+
+
+def test_chunk_bounds_cover_all_rows():
+    assert chunk_bounds(10, 3) == [(0, 3), (3, 7), (7, 10)]
+    bounds = chunk_bounds(259, 10)
+    assert bounds[0][0] == 0 and bounds[-1][1] == 259
+    assert all(a < b for a, b in bounds)
+    assert all(bounds[i][1] == bounds[i + 1][0] for i in range(9))
+
+
+def test_chunked_tsfresh_equals_single_call_and_resumes(tmp_path, toy_split):
+    """Decision #19: per-chunk extraction + one impute == one extraction over all rows."""
+    X_train, _, X_test, _ = toy_split
+    X_train = X_train.copy()
+    X_train[0, 0, :] = 0.0  # constant series: features with NaN that impute must fill
+    fc = MinimalFCParameters()
+    expected = extract_tsfresh(np.concatenate([X_train, X_test]), n_jobs=1, fc_parameters=fc)
+
+    parts = tmp_path / "parts"
+    first = extract_tsfresh_chunked(X_train, X_test, parts, 3, chunk_ids=[0], n_jobs=1, fc_parameters=fc,
+                                    log=lambda _: None)
+    assert first is None  # chunks 1 and 2 still missing
+    full = extract_tsfresh_chunked(X_train, X_test, parts, 3, n_jobs=1, fc_parameters=fc, log=lambda _: None)
+    np.testing.assert_allclose(full, expected, rtol=1e-12, atol=1e-12)
+    assert len(list(parts.glob("part_*.npz"))) == 3
 
 
 def test_feature_cache_roundtrip(tmp_path, toy_split):
