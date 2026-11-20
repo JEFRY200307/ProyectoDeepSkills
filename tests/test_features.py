@@ -1,11 +1,15 @@
 import numpy as np
+import pandas as pd
 import pytest
 from tsfresh.feature_extraction import MinimalFCParameters
 
 from ts2tabpfn.data import get_resample
 from ts2tabpfn.features import (
+    assemble_chunks,
     cache_path,
     chunk_bounds,
+    chunk_path,
+    save_chunk,
     extract_tsfresh_chunked,
     extract_catch22,
     extract_full,
@@ -94,6 +98,26 @@ def test_chunked_tsfresh_equals_single_call_and_resumes(tmp_path, toy_split):
     full = extract_tsfresh_chunked(X_train, X_test, parts, 3, n_jobs=1, fc_parameters=fc, log=lambda _: None)
     np.testing.assert_allclose(full, expected, rtol=1e-12, atol=1e-12)
     assert len(list(parts.glob("part_*.npz"))) == 3
+
+
+def test_assemble_chunks_aligns_columns_by_name(tmp_path, toy_split):
+    """With n_jobs > 1, tsfresh can return each chunk's columns in a different order."""
+    X_train, _, X_test, _ = toy_split
+    fc = MinimalFCParameters()
+    expected = extract_tsfresh(np.concatenate([X_train, X_test]), n_jobs=1, fc_parameters=fc)
+    parts = tmp_path / "parts"
+    extract_tsfresh_chunked(X_train, X_test, parts, 2, n_jobs=1, fc_parameters=fc, log=lambda _: None)
+
+    # Rewrite chunk 1 with its columns reversed, as a different arrival order would.
+    with np.load(chunk_path(parts, 1, 2)) as data:
+        shuffled = pd.DataFrame(data["values"], columns=list(data["columns"])).iloc[:, ::-1]
+    save_chunk(chunk_path(parts, 1, 2), shuffled)
+    np.testing.assert_allclose(assemble_chunks(parts, 2), expected, rtol=1e-12, atol=1e-12)
+
+    # A chunk with a different set of features is still an error.
+    save_chunk(chunk_path(parts, 1, 2), shuffled.iloc[:, 1:])
+    with pytest.raises(ValueError, match="different features"):
+        assemble_chunks(parts, 2)
 
 
 def test_feature_cache_roundtrip(tmp_path, toy_split):

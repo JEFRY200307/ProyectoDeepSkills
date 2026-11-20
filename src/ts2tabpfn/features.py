@@ -112,10 +112,15 @@ def assemble_chunks(parts_dir: str | Path, n_chunks: int):
     for p in paths:
         with np.load(p, allow_pickle=False) as data:
             frames.append(pd.DataFrame(data["values"], columns=list(data["columns"])))
+    # tsfresh orders its columns by the order in which parallel results arrive
+    # (imap_unordered in tsfresh/utilities/distribution.py), so with n_jobs > 1 each chunk
+    # can come back with the same features in a different order. Align by name to the
+    # first chunk's order; only a different set of features is an error.
     columns = frames[0].columns
-    for frame in frames[1:]:
-        if list(frame.columns) != list(columns):
-            raise ValueError(f"Chunk columns differ in {parts_dir}")
+    for i, frame in enumerate(frames[1:], 1):
+        if set(frame.columns) != set(columns) or len(frame.columns) != len(columns):
+            raise ValueError(f"Chunk {i} has different features than chunk 0 in {parts_dir}")
+        frames[i] = frame[columns]
     full = pd.concat(frames, ignore_index=True)
     return impute_features(full)
 
