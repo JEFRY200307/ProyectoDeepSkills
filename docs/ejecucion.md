@@ -39,6 +39,25 @@ La prueba con TabPFN real se salta si no está definida la variable `HF_TOKEN`.
 
 Orden previsto: catch22 → los 3 extractores en los 7 de ECG → tsfresh → MultiROCKET (ver `plan-fases.md`). Con 2 sesiones: `NUM_SHARDS = 2` y `SHARD = 0` / `1`.
 
+## Kaggle (tercera sesión de apoyo)
+
+Notebook: `notebooks/kaggle_runner.ipynb`. Kaggle no escribe en Drive: corre una lista explícita de datasets (`DATASETS`) y deja los JSON en `/kaggle/working`, que luego se suben a Drive a mano. Límites: 12 h por corrida (si se pasa, no guarda nada) y ~30 h de GPU por semana. Por eso la celda de ejecución se detiene sola a las `TIME_BUDGET_H = 10.5` h y conserva lo terminado.
+
+Uso para MultiROCKET (20 nov 2026): Kaggle toma la cola del shard 0, que avanza de barato a caro, empezando por lo más caro, para que ninguna sesión repita trabajo.
+
+| Corrida | `DATASETS` | Costo de los autores |
+|---|---|---|
+| 1 | `["PhonemeSpectra"]` | 15.1 h (lo que no termine lo sigue el shard 0) |
+| 2 | `["NonInvasiveFetalECGThorax2", "Adiac"]` | 7.4 h + 5.1 h |
+
+1. *File → Import Notebook* → sube `notebooks/kaggle_runner.ipynb`.
+2. *Settings → Accelerator* → **GPU T4 x2**; internet encendido; *Add-ons → Secrets* → `HF_TOKEN` activado.
+3. Ajusta `DATASETS` y **Save Version → Save & Run All (Commit)**. Corre en segundo plano; puedes cerrar el navegador.
+4. Al terminar, en la versión guardada → *Output* → descarga `results_kaggle_<fecha>.zip`.
+5. Súbelo a `MyDrive/ts2tabpfn/` y, en una celda de Colab: `!unzip -n /content/drive/MyDrive/ts2tabpfn/results_kaggle_<fecha>.zip -d /content/drive/MyDrive/ts2tabpfn/` (`-n` no sobrescribe nada). Hazlo **antes** de que el shard 0 llegue a ese dataset; si llega antes, recalcula lo que falte (mismo resultado, tiempo perdido).
+
+La T4 de Kaggle (4 vCPU) no está calibrada; se espera más lenta que la L4. Mira en el log el tiempo del primer resample.
+
 ## AWS (extracción de tsfresh)
 
 Guía completa paso a paso en [aws_tsfresh.md](aws_tsfresh.md): instancia `c7a.8xlarge` que se configura sola con [`scripts/aws/tsfresh_user_data.sh`](../scripts/aws/tsfresh_user_data.sh), sube las features a S3 y se borra al terminar.
