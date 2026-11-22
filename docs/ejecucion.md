@@ -56,7 +56,9 @@ Uso para MultiROCKET (20 nov 2026): Kaggle toma la cola del shard 0, que avanza 
 4. Al terminar, en la versión guardada → *Output* → descarga `results_kaggle_<fecha>.zip`.
 5. Súbelo a `MyDrive/ts2tabpfn/` y, en una celda de Colab: `!unzip -n /content/drive/MyDrive/ts2tabpfn/results_kaggle_<fecha>.zip -d /content/drive/MyDrive/ts2tabpfn/` (`-n` no sobrescribe nada). Hazlo **antes** de que el shard 0 llegue a ese dataset; si llega antes, recalcula lo que falte (mismo resultado, tiempo perdido).
 
-La T4 de Kaggle (4 vCPU) no está calibrada; se espera más lenta que la L4. Mira en el log el tiempo del primer resample.
+Medido en la T4 de Kaggle: PhonemeSpectra ~45 min por resample (~1.5× los autores; la L4 va a ~0.4–0.6×).
+
+**tsfresh en Kaggle (22 nov 2026):** toma LSST (4.9 h de los autores), el dataset más caro del shard 1 de tsfresh, antes de que ese shard empiece. Descarga `MyDrive/ts2tabpfn/features/tsfresh/LSST.npz`, súbelo a Kaggle como dataset (*Add Input → Upload*), agrégalo como Input y usa `EXTRACTOR = "tsfresh"`, `DATASETS = ["LSST"]`. La celda de features copia los `.npz` de `/kaggle/input` y verifica forma y NaN.
 
 ## AWS (extracción de tsfresh)
 
